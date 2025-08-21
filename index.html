@@ -684,8 +684,13 @@
             
             // Only show activities that have content
             if (chunk.letters && chunk.letters.length > 0) {
-                activities.push({ id: 'sound-match', name: 'مطابقة الصوت' });
+                activities.push({ id: 'sound-match', name: 'مطابقة صوت الحروف' });
                 activities.push({ id: 'capital-match', name: 'مطابقة الحروف الكبيرة والصغيرة' });
+            }
+            
+            // Add the new combined sound match activity
+            if ((chunk.words && chunk.words.length > 0) || (chunk.letterPairs && chunk.letterPairs.length > 0)) {
+                activities.push({ id: 'combined-sound-match', name: 'مطابقة أصوات الكلمات والمقاطع' });
             }
             
             if (chunk.words && chunk.words.length > 0) {
@@ -728,8 +733,13 @@
             let title = '';
             
             if (activityType === 'sound-match') {
-                questions = [...(chunk.letters || []), ...(chunk.letterPairs || [])];
-                title = 'مطابقة الصوت';
+                // Only use letters for this activity
+                questions = chunk.letters || [];
+                title = 'مطابقة صوت الحروف';
+            } else if (activityType === 'combined-sound-match') {
+                // Combine words and letter pairs for this new activity
+                questions = [...(chunk.words || []), ...(chunk.letterPairs || [])];
+                title = 'مطابقة أصوات الكلمات والمقاطع';
             } else if (activityType === 'word-build' || activityType === 'fill-in-the-blank' || 
                       activityType === 'word-match' || activityType === 'initial-sound') {
                 questions = chunk.words || [];
@@ -770,8 +780,9 @@
             const container = document.getElementById('activity-content');
             container.innerHTML = '';
             
-            if (activityType === 'sound-match') renderSoundMatchUI(question, container);
-            else if (activityType === 'word-build') renderWordBuildUI(question, container);
+            if (activityType === 'sound-match' || activityType === 'combined-sound-match') {
+                renderSoundMatchUI(question, container);
+            } else if (activityType === 'word-build') renderWordBuildUI(question, container);
             else if (activityType === 'fill-in-the-blank') renderFillInTheBlankUI(question, container);
             else if (activityType === 'word-match') renderWordMatchUI(question, container);
             else if (activityType === 'initial-sound') renderInitialSoundUI(question, container);
@@ -799,6 +810,9 @@
                 
                 if (chunk.letters && chunk.letters.length > 0) {
                     possibleActivities.push('sound-match', 'capital-match');
+                }
+                if ((chunk.words && chunk.words.length > 0) || (chunk.letterPairs && chunk.letterPairs.length > 0)) {
+                    possibleActivities.push('combined-sound-match');
                 }
                 if (chunk.words && chunk.words.length > 0) {
                     possibleActivities.push('word-build', 'fill-in-the-blank', 'word-match', 'initial-sound');
@@ -1110,8 +1124,26 @@
         
         function renderSoundMatchUI(correctItem, container) {
             const chunk = appData.chunks.find(c => c.id === currentActivity.chunkId);
-            const isPair = correctItem.length > 1;
-            const optionsPool = isPair ? (chunk.letterPairs || []) : (chunk.letters || []);
+            let optionsPool, isLetterActivity;
+            
+            // Determine the options pool based on activity type
+            if (currentActivity.activityType === 'sound-match') {
+                // Only letters for sound-match
+                optionsPool = chunk.letters || [];
+                isLetterActivity = true;
+            } else {
+                // Combined for combined-sound-match
+                const isPair = correctItem.length > 1 && !chunk.words.includes(correctItem);
+                if (isPair) {
+                    optionsPool = chunk.letterPairs || [];
+                } else if (chunk.words.includes(correctItem)) {
+                    optionsPool = chunk.words || [];
+                } else {
+                    // This shouldn't happen for combined-sound-match, but fallback to letters
+                    optionsPool = chunk.letters || [];
+                }
+                isLetterActivity = false;
+            }
             
             let options = [correctItem];
             const maxOptions = Math.min(4, optionsPool.length);
@@ -1120,8 +1152,12 @@
                 if (!options.includes(randomItem)) options.push(randomItem);
             }
             
+            const promptText = isLetterActivity ? 
+                "استمع للصوت واختر الحرف الصحيح." : 
+                "استمع للصوت واختر الإجابة الصحيحة.";
+            
             container.innerHTML = `
-                <p class="text-xl mb-6">استمع للصوت واختر الحرف الصحيح.</p>
+                <p class="text-xl mb-6">${promptText}</p>
                 <div class="flex flex-col items-center gap-1 mb-8">
                     <button id="play-sound-btn" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full" aria-label="Play sound">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
@@ -1138,7 +1174,11 @@
             
             shuffleArray(options).forEach(item => {
                 const btn = document.createElement('button');
-                btn.className = 'sound-option-btn font-bold bg-gray-100 text-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-200 english-content';
+                // Use word button style for words, sound button for letters/pairs
+                const isWord = chunk.words && chunk.words.includes(item);
+                btn.className = isWord ? 
+                    'word-option-btn font-bold bg-gray-100 text-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-200 english-content' :
+                    'sound-option-btn font-bold bg-gray-100 text-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-200 english-content';
                 btn.textContent = item;
                 btn.onclick = () => {
                     if (item === correctItem) handleCorrectAnswer();
@@ -1150,7 +1190,6 @@
                 };
                 optionsContainer.appendChild(btn);
             });
-            // Removed auto-speak to prevent overlapping sounds
         }
         
         function renderWordMatchUI(correctWord, container) {
@@ -1433,7 +1472,4 @@
         }
     </script>
 </body>
-
 </html>
-" is selected.
-Can you write a short description for 
