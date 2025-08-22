@@ -11,7 +11,6 @@
         body {
             font-family: 'Tajawal', 'Inter', sans-serif;
         }
-        /* English content should always be LTR */
         .english-content {
             direction: ltr !important;
             text-align: left;
@@ -77,7 +76,6 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        /* Fix for letter placement in activities */
         .letter-slot {
             cursor: pointer;
             user-select: none;
@@ -164,7 +162,6 @@
                         </svg>
                     </button>
                     <div id="dropdown-menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200">
-                        <!-- BRANDED MENU ITEM -->
                         <a href="https://www.my2ndlang.blog" target="_blank" rel="noopener noreferrer" class="block px-4 py-3 text-sm text-gray-800 font-bold border-b">
                             لغتي الثانية.
                         </a>
@@ -317,7 +314,7 @@
             lastLoginDate: null, 
             earnedAchievements: [], 
             timeSpent: 0,
-            version: 2 // Add version for future updates
+            version: 2
         };
         let femaleVoice = null;
         let currentActivity = {};
@@ -326,7 +323,7 @@
         let saveTimeout = null;
         let achievementQueue = [];
         let isShowingAchievement = false;
-        let speechTimeout = null; // Add this to track speech timeouts
+        let speechTimeout = null;
 
         // --- AUDIO ENGINE ---
         function initAudio() { 
@@ -376,30 +373,6 @@
             }
         }
 
-        // --- DOM ELEMENTS ---
-        const landingPage = document.getElementById('landing-page');
-        const startLearningBtn = document.getElementById('start-learning-btn');
-        const appContainer = document.getElementById('app-container');
-        const mainTitle = document.getElementById('main-title');
-        const backButton = document.getElementById('back-button');
-        const dashboardView = document.getElementById('dashboard-view');
-        const lessonView = document.getElementById('lesson-view');
-        const activityView = document.getElementById('activity-view');
-        const achievementsView = document.getElementById('achievements-view');
-        const progressReportView = document.getElementById('progress-report-view');
-        const chunkGrid = document.getElementById('chunk-grid');
-        const messageModal = document.getElementById('message-modal');
-        const modalMessage = document.getElementById('modal-message');
-        const modalButtons = document.getElementById('modal-buttons');
-        const activityProgress = document.getElementById('activity-progress');
-        const appBody = document.querySelector('body');
-        const menuButton = document.getElementById('menu-button');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        const pointsDisplay = document.getElementById('points-display');
-        const streakDisplay = document.getElementById('streak-display');
-        const achievementUnlockedModal = document.getElementById('achievement-unlocked-modal');
-        const loadingIndicator = document.getElementById('loading-indicator');
-
         // --- CORE APP LOGIC ---
         function debouncedSave() {
             if (saveTimeout) clearTimeout(saveTimeout);
@@ -407,7 +380,6 @@
                 try {
                     localStorage.setItem('literacyAppProgress', JSON.stringify(userProgress));
                 } catch (e) {
-                    // Safari Private Browsing mode throws error
                     console.warn('Cannot save progress (private browsing?):', e);
                 }
             }, 1000);
@@ -422,7 +394,6 @@
                 const saved = localStorage.getItem('literacyAppProgress');
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    // Migrate old data if needed
                     if (!parsed.version) {
                         parsed.version = 2;
                     }
@@ -430,7 +401,6 @@
                 }
             } catch (e) {
                 console.error('Error loading progress:', e);
-                // Reset to default if corrupt or Safari Private Mode
                 userProgress = { 
                     unlockedChunk: 1, 
                     completedChunks: [], 
@@ -453,7 +423,6 @@
             
             const voices = window.speechSynthesis.getVoices();
             
-            // Simple voice selection - prioritize female English voices
             femaleVoice = voices.find(v => v.name === 'Google UK English Female') ||
                          voices.find(v => v.name === 'Google US English') ||
                          voices.find(v => v.name.includes('Samantha')) ||
@@ -473,16 +442,13 @@
             if (!('speechSynthesis' in window)) return;
             
             try {
-                // Clear any pending speech timeout
                 if (speechTimeout) {
                     clearTimeout(speechTimeout);
                     speechTimeout = null;
                 }
                 
-                // Cancel any ongoing speech immediately
                 window.speechSynthesis.cancel();
                 
-                // Create and speak the utterance directly (no delay)
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'en-GB';
                 utterance.rate = rate;
@@ -491,7 +457,6 @@
                     utterance.voice = femaleVoice;
                 }
                 
-                // Simple error handling
                 utterance.onerror = (event) => {
                     console.error('Speech error:', event.error);
                 };
@@ -578,6 +543,30 @@
             saveProgress();
         }
 
+        // --- DOM ELEMENTS ---
+        const landingPage = document.getElementById('landing-page');
+        const startLearningBtn = document.getElementById('start-learning-btn');
+        const appContainer = document.getElementById('app-container');
+        const mainTitle = document.getElementById('main-title');
+        const backButton = document.getElementById('back-button');
+        const dashboardView = document.getElementById('dashboard-view');
+        const lessonView = document.getElementById('lesson-view');
+        const activityView = document.getElementById('activity-view');
+        const achievementsView = document.getElementById('achievements-view');
+        const progressReportView = document.getElementById('progress-report-view');
+        const chunkGrid = document.getElementById('chunk-grid');
+        const messageModal = document.getElementById('message-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalButtons = document.getElementById('modal-buttons');
+        const activityProgress = document.getElementById('activity-progress');
+        const appBody = document.querySelector('body');
+        const menuButton = document.getElementById('menu-button');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const pointsDisplay = document.getElementById('points-display');
+        const streakDisplay = document.getElementById('streak-display');
+        const achievementUnlockedModal = document.getElementById('achievement-unlocked-modal');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
         // --- RENDERING FUNCTIONS ---
         function renderDashboard() {
             chunkGrid.innerHTML = '';
@@ -657,10 +646,21 @@
             const lettersContainer = document.getElementById('lesson-letters');
             lettersContainer.innerHTML = '';
             if (chunk.id === 10) {
-                lettersContainer.appendChild(createSoundButton('sh', 'shuh'));
-                lettersContainer.appendChild(createSoundButton('ch', 'chuh'));
-                lettersContainer.appendChild(createSoundButton('th (ذ)', 'the'));
-                lettersContainer.appendChild(createSoundButton('th (ث)', 'thuh'));
+                // For compound letters, show Arabic equivalents without sound
+                const compoundLetters = [
+                    { english: 'sh', arabic: 'ش' },
+                    { english: 'ch', arabic: 'تش' },
+                    { english: 'th', arabic: 'ذ / ث' }
+                ];
+                compoundLetters.forEach(({ english, arabic }) => {
+                    const container = document.createElement('div');
+                    container.className = 'flex flex-col items-center';
+                    const btn = document.createElement('div');
+                    btn.className = 'text-2xl font-bold bg-blue-100 text-blue-800 w-16 h-16 rounded-lg flex items-center justify-center';
+                    btn.innerHTML = `<div class="text-center"><div class="english-content text-sm">${english}</div><div class="text-lg">${arabic}</div></div>`;
+                    container.appendChild(btn);
+                    lettersContainer.appendChild(container);
+                });
             } else if (chunk.letters.length > 0) {
                 chunk.letters.forEach(l => lettersContainer.appendChild(createSoundButton(l.toUpperCase() + l, l)));
             } else {
@@ -685,7 +685,10 @@
             // Only show activities that have content
             if (chunk.letters && chunk.letters.length > 0) {
                 activities.push({ id: 'sound-match', name: 'مطابقة صوت الحروف' });
-                activities.push({ id: 'capital-match', name: 'مطابقة الحروف الكبيرة والصغيرة' });
+                // Skip capital match for compound letters (chunk 10)
+                if (chunk.id !== 10) {
+                    activities.push({ id: 'capital-match', name: 'مطابقة الحروف الكبيرة والصغيرة' });
+                }
             }
             
             // Add the new combined sound match activity
@@ -733,11 +736,9 @@
             let title = '';
             
             if (activityType === 'sound-match') {
-                // Only use letters for this activity
                 questions = chunk.letters || [];
                 title = 'مطابقة صوت الحروف';
             } else if (activityType === 'combined-sound-match') {
-                // Combine words and letter pairs for this new activity
                 questions = [...(chunk.words || []), ...(chunk.letterPairs || [])];
                 title = 'مطابقة أصوات الكلمات والمقاطع';
             } else if (activityType === 'word-build' || activityType === 'fill-in-the-blank' || 
@@ -763,7 +764,7 @@
             currentActivity = { 
                 chunkId, 
                 activityType, 
-                questions: shuffleArray(questions).slice(0, Math.min(5, questions.length)), // Limit to 5 questions
+                questions: shuffleArray(questions).slice(0, Math.min(5, questions.length)),
                 currentIndex: 0 
             };
             
@@ -809,7 +810,10 @@
                 let possibleActivities = [];
                 
                 if (chunk.letters && chunk.letters.length > 0) {
-                    possibleActivities.push('sound-match', 'capital-match');
+                    possibleActivities.push('sound-match');
+                    if (chunk.id !== 10) {
+                        possibleActivities.push('capital-match');
+                    }
                 }
                 if ((chunk.words && chunk.words.length > 0) || (chunk.letterPairs && chunk.letterPairs.length > 0)) {
                     possibleActivities.push('combined-sound-match');
@@ -1046,7 +1050,6 @@
                 }
             });
             
-            // Cleanup on page unload
             window.addEventListener('beforeunload', () => {
                 stopLearningTimer();
                 if (saveTimeout) clearTimeout(saveTimeout);
@@ -1067,10 +1070,9 @@
             initAudio();
         });
         
-        // Set year on initial load for landing page footer
         document.getElementById('landing-year').textContent = new Date().getFullYear();
 
-        // --- ACTIVITY RENDERERS (Fixed) ---
+        // --- ACTIVITY RENDERERS ---
         function renderInitialSoundUI(word, container) {
             const correctLetter = word[0];
             const partialWord = '<span class="text-blue-500">_</span>' + word.substring(1);
@@ -1126,20 +1128,18 @@
             const chunk = appData.chunks.find(c => c.id === currentActivity.chunkId);
             let optionsPool, isLetterActivity;
             
-            // Determine the options pool based on activity type
+            const isCompoundLetterChunk = currentActivity.chunkId === 10;
+            
             if (currentActivity.activityType === 'sound-match') {
-                // Only letters for sound-match
                 optionsPool = chunk.letters || [];
                 isLetterActivity = true;
             } else {
-                // Combined for combined-sound-match
                 const isPair = correctItem.length > 1 && !chunk.words.includes(correctItem);
                 if (isPair) {
                     optionsPool = chunk.letterPairs || [];
                 } else if (chunk.words.includes(correctItem)) {
                     optionsPool = chunk.words || [];
                 } else {
-                    // This shouldn't happen for combined-sound-match, but fallback to letters
                     optionsPool = chunk.letters || [];
                 }
                 isLetterActivity = false;
@@ -1150,6 +1150,40 @@
             while (options.length < maxOptions) {
                 const randomItem = optionsPool[Math.floor(Math.random() * optionsPool.length)];
                 if (!options.includes(randomItem)) options.push(randomItem);
+            }
+            
+            // Special handling for compound letters
+            if (isLetterActivity && isCompoundLetterChunk) {
+                const compoundLetterMap = { 'sh': 'ش', 'ch': 'تش', 'th': 'ذ / ث' };
+                const arabicEquivalent = compoundLetterMap[correctItem] || correctItem;
+                
+                container.innerHTML = `
+                    <p class="text-xl mb-6">اختر الصوت المطابق للحرف المركب.</p>
+                    <div class="text-8xl font-bold mb-8">
+                        <div class="text-center">
+                            <div class="english-content text-4xl">${correctItem}</div>
+                            <div class="text-6xl">${arabicEquivalent}</div>
+                        </div>
+                    </div>
+                    <div id="options-container" class="flex flex-wrap justify-center gap-4"></div>`;
+                
+                const optionsContainer = document.getElementById('options-container');
+                shuffleArray(options).forEach(item => {
+                    const btn = document.createElement('button');
+                    const itemArabic = compoundLetterMap[item] || item;
+                    btn.className = 'sound-option-btn font-bold bg-gray-100 text-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-200';
+                    btn.innerHTML = `<div class="text-center"><div class="english-content text-lg">${item}</div><div class="text-2xl">${itemArabic}</div></div>`;
+                    btn.onclick = () => {
+                        if (item === correctItem) handleCorrectAnswer();
+                        else { 
+                            playFailureSound(); 
+                            btn.classList.add('incorrect'); 
+                            setTimeout(() => btn.classList.remove('incorrect'), 500); 
+                        }
+                    };
+                    optionsContainer.appendChild(btn);
+                });
+                return;
             }
             
             const promptText = isLetterActivity ? 
@@ -1174,7 +1208,6 @@
             
             shuffleArray(options).forEach(item => {
                 const btn = document.createElement('button');
-                // Use word button style for words, sound button for letters/pairs
                 const isWord = chunk.words && chunk.words.includes(item);
                 btn.className = isWord ? 
                     'word-option-btn font-bold bg-gray-100 text-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-200 english-content' :
@@ -1473,4 +1506,3 @@
     </script>
 </body>
 </html>
-
