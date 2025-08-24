@@ -221,6 +221,7 @@ const lessonView = document.getElementById('lesson-view');
 const activityView = document.getElementById('activity-view');
 const achievementsView = document.getElementById('achievements-view');
 const progressReportView = document.getElementById('progress-report-view');
+const importantNoteView = document.getElementById('important-note-view');
 const chunkGrid = document.getElementById('chunk-grid');
 const messageModal = document.getElementById('message-modal');
 const modalMessage = document.getElementById('modal-message');
@@ -236,7 +237,7 @@ const loadingIndicator = document.getElementById('loading-indicator');
 
 // -------------------- View Switching --------------------
 function showView(viewName) {
-  [dashboardView, lessonView, activityView, achievementsView, progressReportView].forEach(v => v.classList.add('hidden'));
+  [dashboardView, lessonView, activityView, achievementsView, progressReportView, importantNoteView].forEach(v => v.classList.add('hidden'));
   backButton.classList.add('hidden');
 
   if (viewName === 'dashboard') {
@@ -253,6 +254,10 @@ function showView(viewName) {
     progressReportView.classList.remove('hidden');
     backButton.classList.remove('hidden');
     mainTitle.textContent = 'تقرير التقدم';
+  } else if (viewName === 'important-note') {
+    importantNoteView.classList.remove('hidden');
+    backButton.classList.remove('hidden');
+    mainTitle.textContent = 'ملاحظة مهمة';
   }
 }
 
@@ -453,6 +458,10 @@ function renderProgressReportPage() {
     });
   }
   showView('progress-report');
+}
+
+function renderImportantNotePage() {
+  showView('important-note');
 }
 
 function showAchievementUnlockedModal(achievement) {
@@ -947,6 +956,19 @@ window.addEventListener('click', () => { if (!dropdownMenu.classList.contains('h
 
 document.getElementById('progress-report-button').addEventListener('click', () => { dropdownMenu.classList.add('hidden'); renderProgressReportPage(); });
 document.getElementById('achievements-button').addEventListener('click', () => { dropdownMenu.classList.add('hidden'); renderAchievementsPage(); });
+document.getElementById('important-note-button').addEventListener('click', () => { dropdownMenu.classList.add('hidden'); renderImportantNotePage(); });
+
+// Copy email functionality
+document.getElementById('copy-email-btn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText('hello@my2ndlang.com');
+    const toast = document.getElementById('copy-toast');
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 1500);
+  } catch (error) {
+    console.log('Could not copy email');
+  }
+});
 
 document.getElementById('reset-progress').addEventListener('click', () => {
   dropdownMenu.classList.add('hidden');
